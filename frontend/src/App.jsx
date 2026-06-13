@@ -1,0 +1,203 @@
+/**
+ * App.jsx — Main Application Component
+ * ======================================
+ * Orchestrates the entire AcneVision AI frontend:
+ * - Routing between Home, About, and Contact pages
+ * - Image upload & analysis state management
+ * - Integration with Flask backend API
+ * - LocalStorage history management
+ */
+
+import { useState, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+
+// Components
+import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import ImagePreview from './components/ImagePreview';
+import LoadingScreen from './components/LoadingScreen';
+import ResultsDashboard from './components/ResultsDashboard';
+import RecommendationCard from './components/RecommendationCard';
+import HistorySection from './components/HistorySection';
+import Footer from './components/Footer';
+
+// Pages
+import About from './pages/About';
+import Contact from './pages/Contact';
+
+// Utilities
+import { analyzeImage } from './utils/api';
+import { saveToHistory, createThumbnail } from './utils/storage';
+
+/**
+ * Home Page — Main analysis workflow
+ */
+function Home() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
+
+  // Handle image selection (from drag-drop or file input)
+  const handleImageSelect = useCallback((file) => {
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setResults(null);
+    setError(null);
+  }, []);
+
+  // Remove selected image
+  const handleRemove = useCallback(() => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setResults(null);
+    setError(null);
+  }, [previewUrl]);
+
+  // Analyze the uploaded image
+  const handleAnalyze = useCallback(async () => {
+    if (!selectedFile) return;
+
+    setIsAnalyzing(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      const data = await analyzeImage(selectedFile);
+      setResults(data);
+
+      // Save to history with thumbnail
+      const thumbnail = await createThumbnail(selectedFile);
+      saveToHistory({
+        ...data,
+        imageName: selectedFile.name,
+        imagePreview: thumbnail,
+      });
+      setHistoryRefresh((prev) => prev + 1);
+    } catch (err) {
+      setError({
+        message: err.message || 'Analysis failed. Please try again.',
+        type: err.errorType || 'generic',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [selectedFile]);
+
+  return (
+    <>
+      {/* Loading Overlay */}
+      <AnimatePresence>
+        {isAnalyzing && <LoadingScreen />}
+      </AnimatePresence>
+
+      {/* Hero / Upload */}
+      {!selectedFile && <HeroSection onImageSelect={handleImageSelect} />}
+
+      {/* Image Preview & Analyze */}
+      {selectedFile && (
+        <div style={{ paddingTop: '92px' }}>
+          <ImagePreview
+            file={selectedFile}
+            previewUrl={previewUrl}
+            onAnalyze={handleAnalyze}
+            onRemove={handleRemove}
+            isAnalyzing={isAnalyzing}
+          />
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="container" style={{ maxWidth: '700px', marginBottom: '20px' }}>
+          <div style={{
+            padding: '24px',
+            borderRadius: '16px',
+            background: error.type === 'no_face'
+              ? 'rgba(234, 179, 8, 0.06)'
+              : error.type === 'low_confidence'
+              ? 'rgba(139, 92, 246, 0.06)'
+              : 'rgba(239, 68, 68, 0.06)',
+            border: `1px solid ${
+              error.type === 'no_face'
+                ? 'rgba(234, 179, 8, 0.2)'
+                : error.type === 'low_confidence'
+                ? 'rgba(139, 92, 246, 0.2)'
+                : 'rgba(239, 68, 68, 0.15)'
+            }`,
+            textAlign: 'center',
+          }}>
+            <div style={{
+              fontSize: '2.5rem',
+              marginBottom: '12px',
+            }}>
+              {error.type === 'no_face' ? '🚫' : error.type === 'low_confidence' ? '🤔' : '⚠️'}
+            </div>
+            <p style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontWeight: 700,
+              fontSize: '1.15rem',
+              color: error.type === 'no_face'
+                ? '#b45309'
+                : error.type === 'low_confidence'
+                ? '#7c3aed'
+                : '#dc2626',
+              marginBottom: '8px',
+            }}>
+              {error.type === 'no_face'
+                ? 'No Face Detected'
+                : error.type === 'low_confidence'
+                ? "Can't Predict — Image Not Recognized"
+                : 'Analysis Error'}
+            </p>
+            <p style={{
+              color: '#64748b',
+              fontSize: '0.9rem',
+              lineHeight: 1.6,
+              maxWidth: '480px',
+              margin: '0 auto',
+            }}>
+              {error.message}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {results && (
+        <>
+          <ResultsDashboard results={results} />
+          <RecommendationCard recommendation={results.recommendation} />
+        </>
+      )}
+
+      {/* History */}
+      <HistorySection refreshTrigger={historyRefresh} />
+    </>
+  );
+}
+
+/**
+ * Main App with Router
+ */
+export default function App() {
+  return (
+    <Router>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <main style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </Router>
+  );
+}
