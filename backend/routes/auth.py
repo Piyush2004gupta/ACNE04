@@ -141,8 +141,7 @@ def forgot_password():
         print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
     
     return jsonify({
-        'message': 'If the email is registered, an OTP has been sent.',
-        'mock_otp': otp # Sending it back just for easy testing in development
+        'message': 'If the email is registered, an OTP has been sent.'
     }), 200
 
 @auth_bp.route('/verify-otp', methods=['POST'])
