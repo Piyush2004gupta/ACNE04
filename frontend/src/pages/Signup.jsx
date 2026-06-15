@@ -14,6 +14,8 @@ export default function Signup() {
     password: '',
     confirmPassword: '',
     imageConsent: false,
+    termsConsent: false,
+    medicalConsent: false,
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +35,14 @@ export default function Signup() {
       setError('Passwords do not match');
       return;
     }
+    if (!formData.termsConsent) {
+      setError('You must agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+    if (!formData.medicalConsent) {
+      setError('You must acknowledge the Medical Disclaimer.');
+      return;
+    }
     if (!formData.imageConsent) {
       setError('You must authorize image storage and usage to create an account.');
       return;
@@ -41,8 +51,8 @@ export default function Signup() {
     setIsLoading(true);
     
     try {
-      // Remove confirmPassword and imageConsent before sending to API
-      const { confirmPassword, imageConsent, ...signupData } = formData;
+      // Remove confirmPassword, imageConsent, termsConsent, and medicalConsent before sending to API
+      const { confirmPassword, imageConsent, termsConsent, medicalConsent, ...signupData } = formData;
       await signup(signupData);
       window.location.href = '/'; 
     } catch (err) {
@@ -190,6 +200,38 @@ export default function Signup() {
               <div style={iconStyle}><FiLock /></div>
               <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm password" required style={inputStyle} onFocus={(e) => e.target.style.borderColor = '#3b82f6'} onBlur={(e) => e.target.style.borderColor = '#e2e8f0'} />
             </div>
+          </div>
+
+          {/* Terms & Privacy Consent */}
+          <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '12px' }}>
+            <input
+              type="checkbox"
+              id="termsConsent"
+              name="termsConsent"
+              checked={formData.termsConsent}
+              onChange={handleChange}
+              required
+              style={{ marginTop: '4px', cursor: 'pointer' }}
+            />
+            <label htmlFor="termsConsent" style={{ fontSize: '0.82rem', color: '#475569', lineHeight: '1.4', cursor: 'pointer' }}>
+              I agree to the Terms of Service and Privacy Policy.
+            </label>
+          </div>
+
+          {/* Medical Disclaimer Consent */}
+          <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '8px' }}>
+            <input
+              type="checkbox"
+              id="medicalConsent"
+              name="medicalConsent"
+              checked={formData.medicalConsent}
+              onChange={handleChange}
+              required
+              style={{ marginTop: '4px', cursor: 'pointer' }}
+            />
+            <label htmlFor="medicalConsent" style={{ fontSize: '0.82rem', color: '#475569', lineHeight: '1.4', cursor: 'pointer' }}>
+              I understand that SKIN AI is an informational tool and does not provide professional medical advice, diagnosis, or treatment.
+            </label>
           </div>
 
           {/* Consent Checkbox */}
