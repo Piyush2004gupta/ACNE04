@@ -76,10 +76,6 @@ app.register_blueprint(history_bp)
 # Ensure uploads directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Load the model at startup (runs for both direct execution and WSGI)
-load_ml_model()
-
-
 # ──────────────────────────────────────────────
 # Model Loading (once at startup)
 # ──────────────────────────────────────────────
@@ -101,6 +97,9 @@ def load_ml_model():
     except Exception as e:
         print(f"[-] Failed to load model: {str(e)}")
         print("[!] Server will run without model. /predict will return mock results.")
+
+# Load the model at startup (runs for both direct execution and WSGI)
+load_ml_model()
 
 
 # ──────────────────────────────────────────────
