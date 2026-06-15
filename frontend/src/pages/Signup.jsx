@@ -214,7 +214,7 @@ export default function Signup() {
               style={{ marginTop: '4px', cursor: 'pointer' }}
             />
             <label htmlFor="termsConsent" style={{ fontSize: '0.82rem', color: '#475569', lineHeight: '1.4', cursor: 'pointer' }}>
-              I agree to the Terms of Service and Privacy Policy.
+              I agree to the <Link to="/terms" target="_blank" style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>Terms of Service</Link> and Privacy Policy.
             </label>
           </div>
 

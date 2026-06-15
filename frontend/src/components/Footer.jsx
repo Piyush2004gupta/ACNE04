@@ -5,6 +5,7 @@
 
 import { MdFaceRetouchingNatural } from 'react-icons/md';
 import { FiHeart, FiAlertTriangle } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
@@ -80,12 +81,18 @@ export default function Footer() {
         </p>
 
         {/* Copyright */}
-        <p style={{
-          fontSize: '0.78rem',
-          color: '#cbd5e1',
-        }}>
-          © {new Date().getFullYear()} SKIN AI. All rights reserved.
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          <p style={{
+            fontSize: '0.78rem',
+            color: '#cbd5e1',
+            margin: 0,
+          }}>
+            © {new Date().getFullYear()} SKIN AI. All rights reserved.
+          </p>
+          <Link to="/terms" style={{ fontSize: '0.75rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
+            Terms & Conditions
+          </Link>
+        </div>
       </div>
 
       {/* Data Usage Disclaimer */}
