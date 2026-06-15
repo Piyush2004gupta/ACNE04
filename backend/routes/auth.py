@@ -4,6 +4,9 @@ import jwt
 import datetime
 from models import db, User
 import random
+import uuid
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 bcrypt = Bcrypt()
@@ -116,6 +119,7 @@ def forgot_password():
     mail_username = current_app.config.get("MAIL_USERNAME")
     mail_password = current_app.config.get("MAIL_PASSWORD")
     
+    print(f"[DEBUG] mail_username: {mail_username}, mail_password: {mail_password}", flush=True)
     if mail_username and mail_password:
         try:
             msg = Message(
@@ -132,13 +136,13 @@ def forgot_password():
                 )
             )
             mail.send(msg)
-            print(f"[+] Real email sent successfully to {email}")
+            print(f"[+] Real email sent successfully to {email}", flush=True)
         except Exception as e:
-            print(f"[-] Failed to send real email: {str(e)}")
-            print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
+            print(f"[-] Failed to send real email: {str(e)}", flush=True)
+            print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n", flush=True)
     else:
         # MOCK SENDING EMAIL (Local Dev Fallback):
-        print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
+        print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n", flush=True)
     
     return jsonify({
         'message': 'If the email is registered, an OTP has been sent.'
@@ -194,3 +198,64 @@ def reset_password():
     del otp_store[email]
     
     return jsonify({'message': 'Password has been reset successfully.'}), 200
+
+@auth_bp.route('/google', methods=['POST'])
+def google_auth():
+    data = request.get_json()
+    token = data.get('token')
+    
+    if not token:
+        return jsonify({'error': 'Missing token', 'message': 'Google credential token is required.'}), 400
+        
+    try:
+        # Verify the Google ID token
+        # Get Client ID from config (or environment variable directly)
+        google_client_id = current_app.config.get("GOOGLE_CLIENT_ID") or os.environ.get("GOOGLE_CLIENT_ID")
+        
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), google_client_id)
+        
+        # ID token is valid. Extract user info:
+        email = idinfo.get('email')
+        name = idinfo.get('name')
+        
+        if not email:
+            return jsonify({'error': 'Invalid token', 'message': 'Google token did not contain an email address.'}), 400
+            
+        # Check if user exists in database
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Create a new user since they signed up with Google for the first time
+            random_pw = uuid.uuid4().hex
+            hashed_pw = bcrypt.generate_password_hash(random_pw).decode('utf-8')
+            
+            user = User(
+                name=name or email.split('@')[0],
+                email=email,
+                phone=f"google_{uuid.uuid4().hex[:10]}",
+                gender="prefer_not_to_say",
+                age=25,
+                password_hash=hashed_pw
+            )
+            db.session.add(user)
+            db.session.commit()
+            message = 'Google account registered successfully'
+        else:
+            message = 'Logged in successfully with Google'
+            
+        # Generate JWT session token
+        jwt_token = jwt.encode({
+            'user_id': user.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
+        }, current_app.config['SECRET_KEY'], algorithm="HS256")
+        
+        return jsonify({
+            'message': message,
+            'token': jwt_token,
+            'user': user.to_dict()
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({'error': 'Unauthorized', 'message': f'Invalid Google token: {str(e)}'}), 401
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': str(e)}), 500

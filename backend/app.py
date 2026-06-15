@@ -17,6 +17,8 @@ import traceback
 from datetime import datetime
 import uuid
 import io
+from dotenv import load_dotenv
+load_dotenv()
 from werkzeug.utils import secure_filename
 
 from flask import Flask, request, jsonify
@@ -64,13 +66,13 @@ if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "super-secret-development-key-for-jwt")
 
-# SMTP Server Configuration for Real Email sending (Gmail, SendGrid, etc.)
-app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+# SMTP Server Configuration for Real Email sending (SendGrid)
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.sendgrid.net")
 app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "True").lower() == "true"
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "YOUR_GMAIL_ADDRESS@gmail.com") # <-- REPLACE THIS with your Gmail address
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "YOUR_GMAIL_APP_PASSWORD")   # <-- REPLACE THIS with your 16-character App Password
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"])
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "apikey")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD") # Read from environment variable or .env file
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", "pg2253890@gmail.com")
 
 mail = Mail(app)
 

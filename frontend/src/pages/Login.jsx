@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiMail, FiLock, FiPhone } from 'react-icons/fi';
-import { login } from '../utils/api';
+import { FiMail, FiLock } from 'react-icons/fi';
+import { GoogleLogin } from '@react-oauth/google';
+import { login, googleLogin } from '../utils/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -21,6 +22,19 @@ export default function Login() {
       window.location.href = '/'; 
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await googleLogin(credentialResponse.credential);
+      window.location.href = '/'; 
+    } catch (err) {
+      setError(err.message || 'Google authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -164,6 +178,25 @@ export default function Login() {
             {isLoading ? 'Logging In...' : 'Log In'}
           </button>
         </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
+          <span style={{ padding: '0 10px' }}>or</span>
+          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google Sign-In failed. Please try again.')}
+            useOneTap
+            shape="pill"
+            theme="filled_blue"
+            text="signin_with"
+            size="large"
+            width="100%"
+          />
+        </div>
 
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: '#64748b' }}>
           Don't have an account?{' '}

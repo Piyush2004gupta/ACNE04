@@ -151,6 +151,19 @@ export async function resetPassword(email, otp, newPassword) {
   }
 }
 
+export async function googleLogin(token) {
+  try {
+    const response = await api.post('/api/auth/google', { token });
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Google login failed');
+  }
+}
+
 export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');

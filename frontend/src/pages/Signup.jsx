@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiUser, FiMail, FiPhone, FiLock, FiCalendar } from 'react-icons/fi';
-import { signup } from '../utils/api';
+import { GoogleLogin } from '@react-oauth/google';
+import { signup, googleLogin } from '../utils/api';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -57,6 +58,19 @@ export default function Signup() {
       window.location.href = '/'; 
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await googleLogin(credentialResponse.credential);
+      window.location.href = '/'; 
+    } catch (err) {
+      setError(err.message || 'Google authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -256,6 +270,25 @@ export default function Signup() {
             </button>
           </div>
         </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
+          <span style={{ padding: '0 10px' }}>or</span>
+          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }}></div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google Sign-In failed. Please try again.')}
+            useOneTap
+            shape="pill"
+            theme="filled_blue"
+            text="signup_with"
+            size="large"
+            width="100%"
+          />
+        </div>
 
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: '#64748b' }}>
           Already have an account?{' '}
