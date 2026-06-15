@@ -57,9 +57,11 @@ MARGIN_THRESHOLD = 15.0      # Min gap (%) between top-1 and top-2 predictions
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = "super-secret-development-key-for-jwt"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "super-secret-development-key-for-jwt")
 
 # Initialize Database
 db.init_app(app)
@@ -73,6 +75,9 @@ app.register_blueprint(history_bp)
 
 # Ensure uploads directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Load the model at startup (runs for both direct execution and WSGI)
+load_ml_model()
 
 
 # ──────────────────────────────────────────────
@@ -332,9 +337,6 @@ def method_not_allowed(e):
 # ──────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # Load the model at startup
-    load_ml_model()
-    
     # Run the Flask development server
     app.run(
         host="0.0.0.0",
