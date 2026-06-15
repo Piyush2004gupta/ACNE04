@@ -38,7 +38,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const res = await requestOtp(email);
-      setSuccessMsg(res.message + (res.mock_otp ? ` (Dev Mock OTP: ${res.mock_otp})` : ''));
+      setSuccessMsg(res.message);
       setStep(2);
     } catch (err) {
       setError(err.message);
