@@ -5,7 +5,7 @@ import { FiMail, FiLock, FiPhone } from 'react-icons/fi';
 import { login } from '../utils/api';
 
 export default function Login() {
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function Login() {
     setError('');
     setIsLoading(true);
     try {
-      await login(identifier, password);
+      await login(email, password);
       // Force reload to update app state if needed, or navigate and let context handle it
       window.location.href = '/'; 
     } catch (err) {
@@ -93,20 +93,20 @@ export default function Login() {
         )}
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Identifier Input */}
+          {/* Email Input */}
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
-              Email or Phone Number
+              Email Address
             </label>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                 <FiMail />
               </div>
               <input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Enter email or phone"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
                 required
                 style={{
                   width: '100%',

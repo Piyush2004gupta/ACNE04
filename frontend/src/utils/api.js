@@ -98,9 +98,9 @@ export async function checkHealth() {
 // Authentication APIs
 // ──────────────────────────────────────────────
 
-export async function login(identifier, password) {
+export async function login(email, password) {
   try {
-    const response = await api.post('/api/auth/login', { identifier, password });
+    const response = await api.post('/api/auth/login', { email, password });
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -124,27 +124,27 @@ export async function signup(userData) {
   }
 }
 
-export async function requestOtp(phone) {
+export async function requestOtp(email) {
   try {
-    const response = await api.post('/api/auth/forgot-password', { phone });
+    const response = await api.post('/api/auth/forgot-password', { email });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to request OTP');
   }
 }
 
-export async function verifyOtp(phone, otp) {
+export async function verifyOtp(email, otp) {
   try {
-    const response = await api.post('/api/auth/verify-otp', { phone, otp });
+    const response = await api.post('/api/auth/verify-otp', { email, otp });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Invalid OTP');
   }
 }
 
-export async function resetPassword(phone, otp, newPassword) {
+export async function resetPassword(email, otp, newPassword) {
   try {
-    const response = await api.post('/api/auth/reset-password', { phone, otp, newPassword });
+    const response = await api.post('/api/auth/reset-password', { email, otp, newPassword });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to reset password');

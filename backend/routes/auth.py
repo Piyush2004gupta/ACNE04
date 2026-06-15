@@ -63,14 +63,14 @@ def signup():
 def login():
     data = request.get_json()
     
-    if not data or not data.get('identifier') or not data.get('password'):
-        return jsonify({'error': 'Missing credentials', 'message': 'Please provide email/phone and password.'}), 400
+    if not data or not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Missing credentials', 'message': 'Please provide email and password.'}), 400
         
-    identifier = data.get('identifier')
+    email = data.get('email')
     password = data.get('password')
     
-    # Try finding user by email or phone
-    user = User.query.filter((User.email == identifier) | (User.phone == identifier)).first()
+    # Try finding user by email only
+    user = User.query.filter_by(email=email).first()
     
     if not user or not bcrypt.check_password_hash(user.password_hash, password):
         return jsonify({'error': 'Unauthorized', 'message': 'Invalid credentials.'}), 401
@@ -90,12 +90,12 @@ def login():
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.get_json()
-    phone = data.get('phone')
+    email = data.get('email')
     
-    if not phone:
-        return jsonify({'error': 'Missing data', 'message': 'Phone number is required.'}), 400
+    if not email:
+        return jsonify({'error': 'Missing data', 'message': 'Email address is required.'}), 400
         
-    user = User.query.filter_by(phone=phone).first()
+    user = User.query.filter_by(email=email).first()
     if not user:
         # Don't reveal if user exists or not for security, but we return a generic success
         pass
@@ -104,34 +104,34 @@ def forgot_password():
     otp = str(random.randint(1000, 9999))
     
     # Store OTP (expires in 10 minutes)
-    otp_store[phone] = {
+    otp_store[email] = {
         'otp': otp,
         'expires_at': datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
     }
     
-    # MOCK SENDING SMS:
-    print(f"\n[{datetime.datetime.utcnow()}] SMS MOCK -> Sent OTP {otp} to {phone}\n")
+    # MOCK SENDING EMAIL:
+    print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
     
     return jsonify({
-        'message': 'If the phone number is registered, an OTP has been sent.',
+        'message': 'If the email is registered, an OTP has been sent.',
         'mock_otp': otp # Sending it back just for easy testing in development
     }), 200
 
 @auth_bp.route('/verify-otp', methods=['POST'])
 def verify_otp():
     data = request.get_json()
-    phone = data.get('phone')
+    email = data.get('email')
     otp = data.get('otp')
     
-    if not phone or not otp:
-        return jsonify({'error': 'Missing data', 'message': 'Phone and OTP are required.'}), 400
+    if not email or not otp:
+        return jsonify({'error': 'Missing data', 'message': 'Email and OTP are required.'}), 400
         
-    stored_data = otp_store.get(phone)
+    stored_data = otp_store.get(email)
     if not stored_data:
-        return jsonify({'error': 'Invalid request', 'message': 'No OTP requested for this number.'}), 400
+        return jsonify({'error': 'Invalid request', 'message': 'No OTP requested for this email.'}), 400
         
     if datetime.datetime.utcnow() > stored_data['expires_at']:
-        del otp_store[phone]
+        del otp_store[email]
         return jsonify({'error': 'Expired', 'message': 'OTP has expired. Please request a new one.'}), 400
         
     if stored_data['otp'] != otp:
@@ -143,19 +143,19 @@ def verify_otp():
 @auth_bp.route('/reset-password', methods=['POST'])
 def reset_password():
     data = request.get_json()
-    phone = data.get('phone')
+    email = data.get('email')
     otp = data.get('otp')
     new_password = data.get('newPassword')
     
-    if not all([phone, otp, new_password]):
-        return jsonify({'error': 'Missing data', 'message': 'Phone, OTP, and new password are required.'}), 400
+    if not all([email, otp, new_password]):
+        return jsonify({'error': 'Missing data', 'message': 'Email, OTP, and new password are required.'}), 400
         
     # Verify OTP again
-    stored_data = otp_store.get(phone)
+    stored_data = otp_store.get(email)
     if not stored_data or stored_data['otp'] != otp or datetime.datetime.utcnow() > stored_data['expires_at']:
         return jsonify({'error': 'Unauthorized', 'message': 'Invalid or expired OTP.'}), 401
         
-    user = User.query.filter_by(phone=phone).first()
+    user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({'error': 'Not found', 'message': 'User not found.'}), 404
         
@@ -164,6 +164,6 @@ def reset_password():
     db.session.commit()
     
     # Cleanup OTP
-    del otp_store[phone]
+    del otp_store[email]
     
     return jsonify({'message': 'Password has been reset successfully.'}), 200

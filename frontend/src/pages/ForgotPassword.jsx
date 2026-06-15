@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiPhone, FiLock, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
+import { FiMail, FiLock, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
 import { requestOtp, verifyOtp, resetPassword } from '../utils/api';
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState(1); // 1: Phone, 2: OTP, 3: New Password, 4: Success
-  const [phone, setPhone] = useState('');
+  const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password, 4: Success
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '']);
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
   const [error, setError] = useState('');
@@ -28,16 +28,16 @@ export default function ForgotPassword() {
     transition: 'border-color 0.2s',
   };
 
-  const handlePhoneSubmit = async (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    if (!phone) {
-      setError('Please enter your phone number');
+    if (!email) {
+      setError('Please enter your email address');
       return;
     }
     setError('');
     setIsLoading(true);
     try {
-      const res = await requestOtp(phone);
+      const res = await requestOtp(email);
       setSuccessMsg(res.message + (res.mock_otp ? ` (Dev Mock OTP: ${res.mock_otp})` : ''));
       setStep(2);
     } catch (err) {
@@ -75,7 +75,7 @@ export default function ForgotPassword() {
     setError('');
     setIsLoading(true);
     try {
-      await verifyOtp(phone, otpStr);
+      await verifyOtp(email, otpStr);
       setSuccessMsg('');
       setStep(3);
     } catch (err) {
@@ -98,7 +98,7 @@ export default function ForgotPassword() {
     setError('');
     setIsLoading(true);
     try {
-      await resetPassword(phone, otp.join(''), passwords.newPassword);
+      await resetPassword(email, otp.join(''), passwords.newPassword);
       setStep(4);
     } catch (err) {
       setError(err.message);
@@ -150,15 +150,15 @@ export default function ForgotPassword() {
             <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px', color: '#1e293b' }}>Forgot Password</h1>
-                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Enter your phone number to receive a reset code.</p>
+                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Enter your email address to receive a reset code.</p>
               </div>
               {error && <div style={{ padding: '12px', background: '#fee2e2', color: '#ef4444', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
-              <form onSubmit={handlePhoneSubmit}>
+              <form onSubmit={handleEmailSubmit}>
                 <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>Phone Number</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>Email Address</label>
                   <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><FiPhone /></div>
-                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" style={inputStyle} onFocus={(e) => e.target.style.borderColor = '#3b82f6'} onBlur={(e) => e.target.style.borderColor = '#e2e8f0'} />
+                    <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><FiMail /></div>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" style={inputStyle} onFocus={(e) => e.target.style.borderColor = '#3b82f6'} onBlur={(e) => e.target.style.borderColor = '#e2e8f0'} />
                   </div>
                 </div>
                 <button type="submit" disabled={isLoading} className="btn-primary" style={{ width: '100%', padding: '16px', justifyContent: 'center', opacity: isLoading ? 0.7 : 1 }}>
@@ -172,7 +172,7 @@ export default function ForgotPassword() {
             <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px', color: '#1e293b' }}>Verify OTP</h1>
-                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Enter the 4-digit code sent to <br/><strong>{phone}</strong></p>
+                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Enter the 4-digit code sent to <br/><strong>{email}</strong></p>
               </div>
               {successMsg && <div style={{ padding: '12px', background: '#dcfce7', color: '#15803d', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>{successMsg}</div>}
               {error && <div style={{ padding: '12px', background: '#fee2e2', color: '#ef4444', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
