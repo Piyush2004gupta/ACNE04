@@ -9,7 +9,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
 // Components
@@ -64,6 +64,15 @@ function Home() {
 
   // Analyze the uploaded image
   const handleAnalyze = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError({
+        message: 'Please login or sign up for an account to run the AI skin analysis and track your history.',
+        type: 'auth_required',
+      });
+      return;
+    }
+
     if (!selectedFile) return;
 
     setIsAnalyzing(true);
@@ -136,36 +145,43 @@ function Home() {
       {error && (
         <div className="container" style={{ maxWidth: '700px', marginBottom: '20px' }}>
           <div style={{
-            padding: '24px',
-            borderRadius: '16px',
+            padding: '28px 24px',
+            borderRadius: '20px',
             background: error.type === 'no_face'
               ? 'rgba(234, 179, 8, 0.06)'
               : error.type === 'low_confidence'
               ? 'rgba(139, 92, 246, 0.06)'
+              : error.type === 'auth_required'
+              ? 'rgba(59, 130, 246, 0.05)'
               : 'rgba(239, 68, 68, 0.06)',
             border: `1px solid ${
               error.type === 'no_face'
                 ? 'rgba(234, 179, 8, 0.2)'
                 : error.type === 'low_confidence'
                 ? 'rgba(139, 92, 246, 0.2)'
+                : error.type === 'auth_required'
+                ? 'rgba(59, 130, 246, 0.15)'
                 : 'rgba(239, 68, 68, 0.15)'
             }`,
             textAlign: 'center',
+            boxShadow: error.type === 'auth_required' ? '0 10px 30px rgba(59, 130, 246, 0.05)' : 'none',
           }}>
             <div style={{
               fontSize: '2.5rem',
               marginBottom: '12px',
             }}>
-              {error.type === 'no_face' ? '🚫' : error.type === 'low_confidence' ? '🤔' : '⚠️'}
+              {error.type === 'no_face' ? '🚫' : error.type === 'low_confidence' ? '🤔' : error.type === 'auth_required' ? '🔒' : '⚠️'}
             </div>
             <p style={{
               fontFamily: "'Outfit', sans-serif",
               fontWeight: 700,
-              fontSize: '1.15rem',
+              fontSize: '1.2rem',
               color: error.type === 'no_face'
                 ? '#b45309'
                 : error.type === 'low_confidence'
                 ? '#7c3aed'
+                : error.type === 'auth_required'
+                ? '#2563eb'
                 : '#dc2626',
               marginBottom: '8px',
             }}>
@@ -173,17 +189,29 @@ function Home() {
                 ? 'No Face Detected'
                 : error.type === 'low_confidence'
                 ? "Can't Predict — Image Not Recognized"
+                : error.type === 'auth_required'
+                ? 'Authentication Required'
                 : 'Analysis Error'}
             </p>
             <p style={{
               color: '#64748b',
-              fontSize: '0.9rem',
+              fontSize: '0.92rem',
               lineHeight: 1.6,
               maxWidth: '480px',
               margin: '0 auto',
             }}>
               {error.message}
             </p>
+            {error.type === 'auth_required' && (
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                <Link to="/login" className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                  Log In
+                </Link>
+                <Link to="/signup" className="btn-secondary" style={{ padding: '10px 24px', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.8)', border: '1px solid rgba(226, 232, 240, 0.8)', color: '#475569', borderRadius: '12px', fontWeight: 600, transition: 'all 0.2s' }}>
+                  Create Account
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
