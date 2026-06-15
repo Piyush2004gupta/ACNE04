@@ -73,6 +73,7 @@ app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "True").lower() == "
 app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "apikey")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD") # Read from environment variable or .env file
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", "pg2253890@gmail.com")
+app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
 
 mail = Mail(app)
 

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_bcrypt import Bcrypt
 import jwt
 import datetime
+import os
 from models import db, User
 import random
 import uuid
@@ -225,23 +226,12 @@ def google_auth():
         user = User.query.filter_by(email=email).first()
         
         if not user:
-            # Create a new user since they signed up with Google for the first time
-            random_pw = uuid.uuid4().hex
-            hashed_pw = bcrypt.generate_password_hash(random_pw).decode('utf-8')
+            return jsonify({
+                'error': 'Unauthorized',
+                'message': 'This Google account is not registered. Please sign up first using the registration form.'
+            }), 401
             
-            user = User(
-                name=name or email.split('@')[0],
-                email=email,
-                phone=f"google_{uuid.uuid4().hex[:10]}",
-                gender="prefer_not_to_say",
-                age=25,
-                password_hash=hashed_pw
-            )
-            db.session.add(user)
-            db.session.commit()
-            message = 'Google account registered successfully'
-        else:
-            message = 'Logged in successfully with Google'
+        message = 'Logged in successfully with Google'
             
         # Generate JWT session token
         jwt_token = jwt.encode({
