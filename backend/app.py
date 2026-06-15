@@ -21,6 +21,7 @@ from werkzeug.utils import secure_filename
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_mail import Mail
 import numpy as np
 
 # Import utilities
@@ -62,6 +63,16 @@ if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "super-secret-development-key-for-jwt")
+
+# SMTP Server Configuration for Real Email sending (Gmail, SendGrid, etc.)
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
+app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "True").lower() == "true"
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME"))
+
+mail = Mail(app)
 
 # Initialize Database
 db.init_app(app)

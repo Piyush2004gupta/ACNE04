@@ -109,8 +109,36 @@ def forgot_password():
         'expires_at': datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
     }
     
-    # MOCK SENDING EMAIL:
-    print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
+    # Check if SMTP credentials are set to send real email
+    from flask_mail import Message
+    from app import mail
+    
+    mail_username = current_app.config.get("MAIL_USERNAME")
+    mail_password = current_app.config.get("MAIL_PASSWORD")
+    
+    if mail_username and mail_password:
+        try:
+            msg = Message(
+                subject="SKIN AI — Your Password Reset OTP",
+                recipients=[email],
+                body=(
+                    f"Hello,\n\n"
+                    f"You have requested to reset your password for your SKIN AI account.\n"
+                    f"Your one-time password (OTP) is: {otp}\n\n"
+                    f"This code will expire in 10 minutes.\n\n"
+                    f"If you did not request this, please ignore this email.\n\n"
+                    f"Best regards,\n"
+                    f"SKIN AI Team"
+                )
+            )
+            mail.send(msg)
+            print(f"[+] Real email sent successfully to {email}")
+        except Exception as e:
+            print(f"[-] Failed to send real email: {str(e)}")
+            print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
+    else:
+        # MOCK SENDING EMAIL (Local Dev Fallback):
+        print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n")
     
     return jsonify({
         'message': 'If the email is registered, an OTP has been sent.',
