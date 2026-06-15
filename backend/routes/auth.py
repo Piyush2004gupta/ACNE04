@@ -1,0 +1,169 @@
+from flask import Blueprint, request, jsonify, current_app
+from flask_bcrypt import Bcrypt
+import jwt
+import datetime
+from models import db, User
+import random
+
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+bcrypt = Bcrypt()
+
+# Temporary in-memory storage for OTPs (In production, use Redis or DB)
+# Format: { 'phone_number': { 'otp': '1234', 'expires_at': timestamp } }
+otp_store = {}
+
+@auth_bp.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    
+    # Required fields
+    required = ['name', 'email', 'phone', 'gender', 'age', 'password']
+    if not all(k in data for k in required):
+        return jsonify({'error': 'Missing data', 'message': 'All fields are required.'}), 400
+        
+    # Check if user already exists
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Conflict', 'message': 'Email already registered.'}), 409
+    if User.query.filter_by(phone=data['phone']).first():
+        return jsonify({'error': 'Conflict', 'message': 'Phone number already registered.'}), 409
+        
+    # Hash password
+    hashed_pw = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+    
+    # Create user
+    new_user = User(
+        name=data['name'],
+        email=data['email'],
+        phone=data['phone'],
+        gender=data['gender'],
+        age=int(data['age']),
+        password_hash=hashed_pw
+    )
+    
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Generate token automatically so they are logged in
+        token = jwt.encode({
+            'user_id': new_user.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
+        }, current_app.config['SECRET_KEY'], algorithm="HS256")
+        
+        return jsonify({
+            'message': 'User created successfully',
+            'token': token,
+            'user': new_user.to_dict()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Server error', 'message': str(e)}), 500
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    
+    if not data or not data.get('identifier') or not data.get('password'):
+        return jsonify({'error': 'Missing credentials', 'message': 'Please provide email/phone and password.'}), 400
+        
+    identifier = data.get('identifier')
+    password = data.get('password')
+    
+    # Try finding user by email or phone
+    user = User.query.filter((User.email == identifier) | (User.phone == identifier)).first()
+    
+    if not user or not bcrypt.check_password_hash(user.password_hash, password):
+        return jsonify({'error': 'Unauthorized', 'message': 'Invalid credentials.'}), 401
+        
+    # Generate token
+    token = jwt.encode({
+        'user_id': user.id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
+    }, current_app.config['SECRET_KEY'], algorithm="HS256")
+    
+    return jsonify({
+        'message': 'Logged in successfully',
+        'token': token,
+        'user': user.to_dict()
+    }), 200
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    phone = data.get('phone')
+    
+    if not phone:
+        return jsonify({'error': 'Missing data', 'message': 'Phone number is required.'}), 400
+        
+    user = User.query.filter_by(phone=phone).first()
+    if not user:
+        # Don't reveal if user exists or not for security, but we return a generic success
+        pass
+        
+    # Generate 4-digit OTP
+    otp = str(random.randint(1000, 9999))
+    
+    # Store OTP (expires in 10 minutes)
+    otp_store[phone] = {
+        'otp': otp,
+        'expires_at': datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+    }
+    
+    # MOCK SENDING SMS:
+    print(f"\n[{datetime.datetime.utcnow()}] SMS MOCK -> Sent OTP {otp} to {phone}\n")
+    
+    return jsonify({
+        'message': 'If the phone number is registered, an OTP has been sent.',
+        'mock_otp': otp # Sending it back just for easy testing in development
+    }), 200
+
+@auth_bp.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    phone = data.get('phone')
+    otp = data.get('otp')
+    
+    if not phone or not otp:
+        return jsonify({'error': 'Missing data', 'message': 'Phone and OTP are required.'}), 400
+        
+    stored_data = otp_store.get(phone)
+    if not stored_data:
+        return jsonify({'error': 'Invalid request', 'message': 'No OTP requested for this number.'}), 400
+        
+    if datetime.datetime.utcnow() > stored_data['expires_at']:
+        del otp_store[phone]
+        return jsonify({'error': 'Expired', 'message': 'OTP has expired. Please request a new one.'}), 400
+        
+    if stored_data['otp'] != otp:
+        return jsonify({'error': 'Invalid OTP', 'message': 'The OTP entered is incorrect.'}), 400
+        
+    # OTP is valid. In a real app, generate a temporary reset token here.
+    return jsonify({'message': 'OTP verified successfully.'}), 200
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    phone = data.get('phone')
+    otp = data.get('otp')
+    new_password = data.get('newPassword')
+    
+    if not all([phone, otp, new_password]):
+        return jsonify({'error': 'Missing data', 'message': 'Phone, OTP, and new password are required.'}), 400
+        
+    # Verify OTP again
+    stored_data = otp_store.get(phone)
+    if not stored_data or stored_data['otp'] != otp or datetime.datetime.utcnow() > stored_data['expires_at']:
+        return jsonify({'error': 'Unauthorized', 'message': 'Invalid or expired OTP.'}), 401
+        
+    user = User.query.filter_by(phone=phone).first()
+    if not user:
+        return jsonify({'error': 'Not found', 'message': 'User not found.'}), 404
+        
+    # Update password
+    user.password_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    db.session.commit()
+    
+    # Cleanup OTP
+    del otp_store[phone]
+    
+    return jsonify({'message': 'Password has been reset successfully.'}), 200

@@ -3,7 +3,7 @@
  * Site footer with medical disclaimer, branding, and links.
  */
 
-import { FaMicroscope } from 'react-icons/fa';
+import { MdFaceRetouchingNatural } from 'react-icons/md';
 import { FiHeart, FiAlertTriangle } from 'react-icons/fi';
 
 export default function Footer() {
@@ -51,27 +51,20 @@ export default function Footer() {
         gap: '16px',
       }}>
         {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
-            fontSize: '0.85rem',
           }}>
-            <FaMicroscope />
+            <img src="/logo.png" alt="SKIN AI Logo" style={{ height: '32px', width: '32px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #3b82f6' }} />
           </div>
           <span style={{
             fontFamily: "'Outfit', sans-serif",
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            color: '#475569',
-          }}>
-            AcneVision AI
+            fontWeight: 800,
+            fontSize: '1.1rem',
+          }} className="text-gradient">
+            SKIN AI
           </span>
         </div>
 
@@ -83,7 +76,7 @@ export default function Footer() {
           alignItems: 'center',
           gap: '4px',
         }}>
-          Made with <FiHeart style={{ color: '#ef4444', fontSize: '0.85rem' }} /> for healthier skin
+          Made with <FiHeart style={{ color: '#ef4444', fontSize: '0.85rem' }} /> by HOPELABSAI Solution Private Limited
         </p>
 
         {/* Copyright */}
@@ -91,7 +84,24 @@ export default function Footer() {
           fontSize: '0.78rem',
           color: '#cbd5e1',
         }}>
-          © {new Date().getFullYear()} AcneVision AI. All rights reserved.
+          © {new Date().getFullYear()} SKIN AI. All rights reserved.
+        </p>
+      </div>
+
+      {/* Data Usage Disclaimer */}
+      <div style={{
+        borderTop: '1px solid rgba(226, 232, 240, 0.4)',
+        padding: '12px 24px',
+        textAlign: 'center',
+        background: 'rgba(248, 250, 252, 0.4)',
+      }}>
+        <p style={{
+          fontSize: '0.78rem',
+          color: '#64748b',
+          margin: 0,
+          lineHeight: '1.5',
+        }}>
+          HOPELABSAI Solution Private Limited stores and uses uploaded images to make the AI more efficient.
         </p>
       </div>
     </footer>

@@ -1,19 +1,30 @@
 /**
  * Navbar Component
- * Fixed top navigation bar with AcneVision AI branding, nav links,
+ * Fixed top navigation bar with SKIN AI branding, nav links,
  * and responsive mobile hamburger menu.
  */
 
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiMenuAlt3, HiX } from 'react-icons/hi';
-import { FaMicroscope } from 'react-icons/fa';
+import { MdFaceRetouchingNatural } from 'react-icons/md';
+import { logout } from '../utils/api';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   // Track scroll position for navbar background
   useEffect(() => {
@@ -56,35 +67,24 @@ export default function Navbar() {
         height: '72px',
       }}>
         {/* Logo */}
-        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <motion.div
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.5 }}
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'white',
-              fontSize: '1.2rem',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
             }}
           >
-            <FaMicroscope />
+            <img src="/logo.png" alt="SKIN AI Logo" style={{ height: '36px', width: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #3b82f6' }} />
           </motion.div>
           <span style={{
             fontFamily: "'Outfit', sans-serif",
-            fontWeight: 700,
-            fontSize: '1.35rem',
-            background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            AcneVision AI
+            fontWeight: 800,
+            fontSize: '1.25rem',
+          }} className="text-gradient">
+            SKIN AI
           </span>
         </Link>
 
@@ -107,13 +107,13 @@ export default function Navbar() {
                 fontSize: '0.95rem',
                 fontWeight: 500,
                 transition: 'all 0.3s ease',
-                color: location.pathname === link.to ? '#2563eb' : '#64748b',
-                background: location.pathname === link.to ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+                color: location.pathname === link.to ? '#3b82f6' : '#64748b',
+                background: location.pathname === link.to ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
               }}
               onMouseOver={(e) => {
                 if (location.pathname !== link.to) {
-                  e.target.style.color = '#2563eb';
-                  e.target.style.background = 'rgba(37, 99, 235, 0.04)';
+                  e.target.style.color = '#3b82f6';
+                  e.target.style.background = 'rgba(59, 130, 246, 0.04)';
                 }
               }}
               onMouseOut={(e) => {
@@ -126,6 +126,26 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <div style={{ width: '1px', height: '24px', background: '#e2e8f0', margin: '0 8px' }} />
+          {token ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span style={{ fontSize: '0.95rem', fontWeight: 500, color: '#475569' }}>
+                Hi, {user?.name?.split(' ')[0] || 'User'}
+              </span>
+              <button onClick={handleLogout} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 16px', fontSize: '0.95rem', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" style={{ textDecoration: 'none', padding: '8px 16px', fontSize: '0.95rem', fontWeight: 600, color: '#3b82f6' }}>
+                Log In
+              </Link>
+              <Link to="/signup" className="btn-primary" style={{ padding: '8px 20px', fontSize: '0.95rem' }}>
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Hamburger */}
@@ -181,14 +201,31 @@ export default function Navbar() {
                       borderRadius: '12px',
                       fontSize: '1rem',
                       fontWeight: 500,
-                      color: location.pathname === link.to ? '#2563eb' : '#0f172a',
-                      background: location.pathname === link.to ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+                      color: location.pathname === link.to ? '#3b82f6' : '#0f172a',
+                      background: location.pathname === link.to ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
                     }}
                   >
                     {link.label}
                   </Link>
                 </motion.div>
               ))}
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+                <div style={{ height: '1px', background: '#e2e8f0', margin: '8px 0' }} />
+                {token ? (
+                  <button onClick={() => { handleLogout(); setIsOpen(false); }} style={{ width: '100%', background: 'none', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', marginTop: '8px', fontSize: '1rem', fontWeight: 600, color: '#64748b', cursor: 'pointer' }}>
+                    Log Out
+                  </button>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none', display: 'block', padding: '12px 16px', color: '#3b82f6', fontWeight: 600, textAlign: 'center' }}>
+                      Log In
+                    </Link>
+                    <Link to="/signup" onClick={() => setIsOpen(false)} className="btn-primary" style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+                      Sign Up
+                    </Link>
+                  </>
+                )}
+              </motion.div>
             </div>
           </motion.div>
         )}

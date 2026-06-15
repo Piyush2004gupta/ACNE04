@@ -17,6 +17,20 @@ const api = axios.create({
   },
 });
 
+// Add a request interceptor to attach the JWT token to every request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 /**
  * Send an image to the backend for acne severity analysis.
  * 
@@ -77,6 +91,90 @@ export async function checkHealth() {
     return response.data;
   } catch (error) {
     throw new Error('Backend server is not reachable.');
+  }
+}
+
+// ──────────────────────────────────────────────
+// Authentication APIs
+// ──────────────────────────────────────────────
+
+export async function login(identifier, password) {
+  try {
+    const response = await api.post('/api/auth/login', { identifier, password });
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Login failed');
+  }
+}
+
+export async function signup(userData) {
+  try {
+    const response = await api.post('/api/auth/signup', userData);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Signup failed');
+  }
+}
+
+export async function requestOtp(phone) {
+  try {
+    const response = await api.post('/api/auth/forgot-password', { phone });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to request OTP');
+  }
+}
+
+export async function verifyOtp(phone, otp) {
+  try {
+    const response = await api.post('/api/auth/verify-otp', { phone, otp });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Invalid OTP');
+  }
+}
+
+export async function resetPassword(phone, otp, newPassword) {
+  try {
+    const response = await api.post('/api/auth/reset-password', { phone, otp, newPassword });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to reset password');
+  }
+}
+
+export function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+}
+
+// ──────────────────────────────────────────────
+// History APIs
+// ──────────────────────────────────────────────
+
+export async function getHistory() {
+  try {
+    const response = await api.get('/api/history/');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch history');
+  }
+}
+
+export async function saveHistory(historyData) {
+  try {
+    const response = await api.post('/api/history/', historyData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to save history');
   }
 }
 

@@ -1,6 +1,6 @@
 /**
  * About Page
- * Information about AcneVision AI — how it works, the model, and the mission.
+ * Information about SKIN AI — how it works, the model, and the mission.
  */
 
 import { motion } from 'framer-motion';
@@ -26,7 +26,7 @@ const features = [
   {
     icon: <FiShield />,
     title: 'Privacy First',
-    description: 'Your images are processed in real-time and never stored on our servers. Your privacy is paramount.',
+    description: 'We store our customers image for better result',
   },
   {
     icon: <FiDatabase />,
@@ -57,14 +57,14 @@ export default function About() {
             gap: '8px',
             padding: '8px 20px',
             borderRadius: '9999px',
-            background: 'rgba(37, 99, 235, 0.08)',
-            color: '#2563eb',
+            background: 'rgba(59, 130, 246, 0.08)',
+            color: '#3b82f6',
             fontSize: '0.85rem',
             fontWeight: 600,
             marginBottom: '20px',
           }}>
             <HiSparkles />
-            About AcneVision AI
+            About SKIN AI
           </div>
 
           <h1 style={{
@@ -86,7 +86,7 @@ export default function About() {
             margin: '0 auto',
             lineHeight: 1.7,
           }}>
-            AcneVision AI leverages state-of-the-art deep learning technology to provide
+            SKIN AI leverages state-of-the-art deep learning technology to provide
             instant, non-invasive acne severity assessments from a simple photograph.
           </p>
         </motion.div>
@@ -140,11 +140,11 @@ export default function About() {
                   width: '48px',
                   height: '48px',
                   borderRadius: '14px',
-                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(6, 182, 212, 0.1))',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#2563eb',
+                  color: '#3b82f6',
                   fontSize: '1.3rem',
                   marginBottom: '16px',
                 }}>
@@ -171,62 +171,7 @@ export default function About() {
           </div>
         </motion.div>
 
-        {/* Model Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="glass-strong"
-          style={{
-            borderRadius: '20px',
-            padding: '36px',
-          }}
-        >
-          <h2 style={{
-            fontFamily: "'Outfit', sans-serif",
-            fontSize: '1.4rem',
-            fontWeight: 700,
-            color: '#0f172a',
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-          }}>
-            <FiCpu style={{ color: '#2563eb' }} />
-            About the Model
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
-          }}>
-            {[
-              { label: 'Framework', value: 'TensorFlow / Keras' },
-              { label: 'Architecture', value: 'CNN (Convolutional Neural Network)' },
-              { label: 'Input Size', value: '224 × 224 pixels' },
-              { label: 'Classes', value: '5 severity levels' },
-              { label: 'Format', value: 'HDF5 (.h5)' },
-              { label: 'Processing', value: 'Real-time inference' },
-            ].map((item, i) => (
-              <div
-                key={i}
-                style={{
-                  padding: '14px 18px',
-                  borderRadius: '12px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                }}
-              >
-                <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {item.label}
-                </p>
-                <p style={{ fontSize: '0.92rem', fontWeight: 600, color: '#0f172a' }}>
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+
       </div>
     </div>
   );

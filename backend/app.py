@@ -9,12 +9,15 @@ Endpoints:
     POST /predict  - Upload an image for acne severity analysis
     GET  /health   - Health check endpoint
 
-Author: AcneVision AI
+Author: SKIN AI
 """
 
 import os
 import traceback
 from datetime import datetime
+import uuid
+import io
+from werkzeug.utils import secure_filename
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -28,6 +31,11 @@ from utils.recommendations import (
     get_severity_index
 )
 from utils.face_detection import detect_face
+
+# Import Database and Routes
+from models import db
+from routes.auth import auth_bp
+from routes.history import history_bp
 
 
 # ──────────────────────────────────────────────
@@ -49,6 +57,19 @@ MARGIN_THRESHOLD = 15.0      # Min gap (%) between top-1 and top-2 predictions
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = "super-secret-development-key-for-jwt"
+
+# Initialize Database
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
+# Register Blueprints
+app.register_blueprint(auth_bp)
+app.register_blueprint(history_bp)
 
 # Ensure uploads directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -159,9 +180,17 @@ def predict():
                 "error": "Invalid file format",
                 "message": f"Allowed formats: {', '.join(ALLOWED_EXTENSIONS)}"
             }), 400
+            
+        # ── Save image for future training ──
+        image_bytes = file.read()
+        unique_filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
+        with open(filepath, 'wb') as f:
+            f.write(image_bytes)
         
         # ── Face detection validation ──
-        has_face, face_count, face_msg = detect_face(file)
+        # Use a BytesIO stream since the original file stream was read
+        has_face, face_count, face_msg = detect_face(io.BytesIO(image_bytes))
         if not has_face:
             return jsonify({
                 "error": "No face detected",
@@ -172,7 +201,7 @@ def predict():
         # ── Process and predict ──
         if model is not None:
             # Preprocess the image
-            processed_image = preprocess_image(file)
+            processed_image = preprocess_image(io.BytesIO(image_bytes))
             
             # Run prediction
             prediction = model.predict(processed_image, verbose=0)
@@ -249,6 +278,7 @@ def predict():
             "confidence": confidence,
             "severity_index": severity_index,
             "recommendation": recommendation,
+            "image_filename": unique_filename,
             "timestamp": datetime.utcnow().isoformat()
         }), 200
         

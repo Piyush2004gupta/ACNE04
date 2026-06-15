@@ -1,7 +1,7 @@
 /**
  * App.jsx — Main Application Component
  * ======================================
- * Orchestrates the entire AcneVision AI frontend:
+ * Orchestrates the entire SKIN AI frontend:
  * - Routing between Home, About, and Contact pages
  * - Image upload & analysis state management
  * - Integration with Flask backend API
@@ -25,9 +25,12 @@ import Footer from './components/Footer';
 // Pages
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 
 // Utilities
-import { analyzeImage } from './utils/api';
+import { analyzeImage, saveHistory as saveBackendHistory } from './utils/api';
 import { saveToHistory, createThumbnail } from './utils/storage';
 
 /**
@@ -70,13 +73,30 @@ function Home() {
       const data = await analyzeImage(selectedFile);
       setResults(data);
 
-      // Save to history with thumbnail
+      // Save to local history with thumbnail
       const thumbnail = await createThumbnail(selectedFile);
       saveToHistory({
         ...data,
         imageName: selectedFile.name,
         imagePreview: thumbnail,
       });
+      
+      // Save to backend database (if logged in)
+      const token = localStorage.getItem('token');
+      if (token && data.image_filename) {
+        try {
+          await saveBackendHistory({
+            image_filename: data.image_filename,
+            predicted_class: data.predicted_class,
+            confidence: data.confidence,
+            severity_index: data.severity_index,
+            recommendation: data.recommendation
+          });
+        } catch (e) {
+          console.error("Failed to save scan to database:", e);
+        }
+      }
+      
       setHistoryRefresh((prev) => prev + 1);
     } catch (err) {
       setError({
@@ -194,6 +214,9 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Routes>
         </main>
         <Footer />

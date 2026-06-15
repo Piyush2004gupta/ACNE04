@@ -6,11 +6,13 @@
 
 import { useCallback, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FiUploadCloud, FiImage } from 'react-icons/fi';
+import { FiUploadCloud, FiImage, FiCamera } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi2';
+import CameraModal from './CameraModal';
 
 export default function HeroSection({ onImageSelect }) {
   const [dragOver, setDragOver] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleDragOver = useCallback((e) => {
@@ -52,48 +54,34 @@ export default function HeroSection({ onImageSelect }) {
       {/* Decorative Background Orbs */}
       <div style={{
         position: 'absolute',
-        width: '400px',
-        height: '400px',
+        width: '500px',
+        height: '500px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%)',
-        top: '-100px',
-        right: '-100px',
+        background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)',
+        top: '-150px',
+        right: '-150px',
         pointerEvents: 'none',
       }} />
       <div style={{
         position: 'absolute',
-        width: '300px',
-        height: '300px',
+        width: '400px',
+        height: '400px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%)',
-        bottom: '-50px',
-        left: '-50px',
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
+        bottom: '-100px',
+        left: '-100px',
         pointerEvents: 'none',
       }} />
 
-      <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 20px',
-            borderRadius: '9999px',
-            background: 'rgba(37, 99, 235, 0.08)',
-            color: '#2563eb',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            marginBottom: '24px',
-            border: '1px solid rgba(37, 99, 235, 0.15)',
-          }}
-        >
-          <HiSparkles style={{ fontSize: '1rem' }} />
-          Powered by Deep Learning
-        </motion.div>
+      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '60px',
+          alignItems: 'center',
+        }}>
+          {/* Left Column: Text and Upload */}
+          <div style={{ textAlign: 'left' }}>
 
         {/* Title */}
         <motion.h1
@@ -109,8 +97,8 @@ export default function HeroSection({ onImageSelect }) {
             color: '#0f172a',
           }}
         >
-          AI Acne Severity{' '}
-          <span className="text-gradient">Detection</span>
+          SKIN{' '}
+          <span className="text-gradient">AI</span>
         </motion.h1>
 
         {/* Subtitle */}
@@ -122,7 +110,7 @@ export default function HeroSection({ onImageSelect }) {
             fontSize: 'clamp(1rem, 2vw, 1.2rem)',
             color: '#64748b',
             maxWidth: '600px',
-            margin: '0 auto 48px',
+            margin: '0 0 48px 0',
             lineHeight: 1.7,
           }}
         >
@@ -135,7 +123,7 @@ export default function HeroSection({ onImageSelect }) {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          style={{ maxWidth: '560px', margin: '0 auto' }}
+          style={{ maxWidth: '560px' }}
         >
           {/* Drag & Drop Zone */}
           <div
@@ -159,13 +147,13 @@ export default function HeroSection({ onImageSelect }) {
                 width: '72px',
                 height: '72px',
                 borderRadius: '20px',
-                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(6, 182, 212, 0.1))',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 20px',
                 fontSize: '1.8rem',
-                color: '#2563eb',
+                color: '#3b82f6',
               }}
             >
               <FiUploadCloud />
@@ -187,19 +175,27 @@ export default function HeroSection({ onImageSelect }) {
             </p>
           </div>
 
-          {/* Upload Button */}
-          <div style={{ marginTop: '20px' }}>
+          {/* Upload Buttons */}
+          <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <button
               className="btn-primary"
               onClick={() => fileInputRef.current?.click()}
-              style={{ margin: '0 auto' }}
+              style={{ margin: '0', flex: 1, justifyContent: 'center' }}
             >
               <FiImage />
               Upload Image
             </button>
+            <button
+              className="btn-primary"
+              onClick={() => setIsCameraOpen(true)}
+              style={{ margin: '0', flex: 1, justifyContent: 'center', background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 10px 20px -5px rgba(16, 185, 129, 0.4)' }}
+            >
+              <FiCamera />
+              Take Photo
+            </button>
           </div>
 
-          {/* Hidden file input */}
+          {/* Hidden file inputs */}
           <input
             ref={fileInputRef}
             type="file"
@@ -209,7 +205,46 @@ export default function HeroSection({ onImageSelect }) {
             id="hero-file-input"
           />
         </motion.div>
+        </div> {/* End Left Column */}
+
+        {/* Right Column: Hero Image */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <div style={{
+            position: 'relative',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(59, 130, 246, 0.25)',
+            border: '8px solid rgba(255,255,255,0.8)',
+            background: 'white',
+          }}>
+            <img 
+              src="/hero-image.png" 
+              alt="SKIN AI Facial Scan" 
+              style={{
+                width: '100%',
+                maxWidth: '500px',
+                display: 'block',
+                borderRadius: '16px',
+              }} 
+            />
+          </div>
+        </motion.div>
+      </div> {/* End Grid */}
       </div>
+
+      <CameraModal 
+        isOpen={isCameraOpen} 
+        onClose={() => setIsCameraOpen(false)} 
+        onCapture={(file) => {
+          setIsCameraOpen(false);
+          onImageSelect(file);
+        }}
+      />
     </section>
   );
 }
