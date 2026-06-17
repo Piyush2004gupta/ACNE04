@@ -35,10 +35,12 @@ from utils.recommendations import (
 )
 from utils.face_detection import detect_face
 
-# Import Database and Routes
-from models import db
+# Import Routes
 from routes.auth import auth_bp
 from routes.history import history_bp
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 
 # ──────────────────────────────────────────────
@@ -77,17 +79,18 @@ app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
 
 mail = Mail(app)
 
-# Initialize Database
-db.init_app(app)
-
-with app.app_context():
-    db.create_all()
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME", "your_cloud_name"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY", "your_api_key"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET", "your_api_secret")
+)
 
 # Register Blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(history_bp)
 
-# Ensure uploads directory exists
+# Ensure uploads directory exists (can be removed if no longer saving locally, but kept just in case)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ──────────────────────────────────────────────
@@ -199,12 +202,23 @@ def predict():
                 "message": f"Allowed formats: {', '.join(ALLOWED_EXTENSIONS)}"
             }), 400
             
-        # ── Save image for future training ──
+        # ── Save image for future training or upload to Cloudinary ──
         image_bytes = file.read()
+        
+        # Upload to Cloudinary
+        try:
+            cloudinary_response = cloudinary.uploader.upload(
+                io.BytesIO(image_bytes),
+                folder="acne_scans",
+                resource_type="image"
+            )
+            image_url = cloudinary_response.get("secure_url")
+        except Exception as e:
+            # Fallback or just print error if Cloudinary fails (e.g. invalid credentials)
+            print("Cloudinary upload failed:", e)
+            image_url = None
+            
         unique_filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
-        with open(filepath, 'wb') as f:
-            f.write(image_bytes)
         
         # ── Face detection validation ──
         # Use a BytesIO stream since the original file stream was read
@@ -296,7 +310,7 @@ def predict():
             "confidence": confidence,
             "severity_index": severity_index,
             "recommendation": recommendation,
-            "image_filename": unique_filename,
+            "image_url": image_url, # Changed from image_filename
             "timestamp": datetime.utcnow().isoformat()
         }), 200
         
@@ -350,9 +364,11 @@ def method_not_allowed(e):
 # ──────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # Run the Flask development server
+    # Run the Flask server
+    debug_mode = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+    port = int(os.environ.get("PORT", 5000))
     app.run(
         host="0.0.0.0",
-        port=5000,
-        debug=True
+        port=port,
+        debug=debug_mode
     )

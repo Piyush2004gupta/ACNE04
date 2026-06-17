@@ -1,12 +1,4 @@
-/**
- * App.jsx — Main Application Component
- * ======================================
- * Orchestrates the entire SKIN AI frontend:
- * - Routing between Home, About, and Contact pages
- * - Image upload & analysis state management
- * - Integration with Flask backend API
- * - LocalStorage history management
- */
+
 
 import { useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
@@ -27,6 +19,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 
 import Terms from './pages/Terms';
 
@@ -245,6 +238,7 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             <Route path="/terms" element={<Terms />} />
           </Routes>

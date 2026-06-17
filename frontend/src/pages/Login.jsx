@@ -144,7 +144,9 @@ export default function Login() {
               <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569' }}>
                 Password
               </label>
-
+              <Link to="/forgot-password" style={{ color: '#3b82f6', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 500 }}>
+                Forgot Password?
+              </Link>
             </div>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
