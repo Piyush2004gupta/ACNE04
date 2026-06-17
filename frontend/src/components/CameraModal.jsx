@@ -44,16 +44,11 @@ export default function CameraModal({ isOpen, onClose, onCapture }) {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
-      // Set canvas dimensions to match video stream
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
       const context = canvas.getContext('2d');
-      // Draw the current video frame to the canvas
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      // Convert canvas to a File object
       canvas.toBlob((blob) => {
         if (blob) {
           const file = new File([blob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });

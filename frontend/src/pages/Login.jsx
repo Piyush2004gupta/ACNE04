@@ -18,7 +18,6 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(email, password);
-      // Force reload to update app state if needed, or navigate and let context handle it
       window.location.href = '/'; 
     } catch (err) {
       setError(err.message);

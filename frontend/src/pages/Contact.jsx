@@ -1,8 +1,3 @@
-/**
- * Contact Page
- * Displays contact information with modern styling.
- */
-
 import { motion } from 'framer-motion';
 import { FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi2';

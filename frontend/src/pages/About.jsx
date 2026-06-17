@@ -1,8 +1,3 @@
-/**
- * About Page
- * Information about SKIN AI — how it works, the model, and the mission.
- */
-
 import { motion } from 'framer-motion';
 import { FiCpu, FiCamera, FiZap, FiShield, FiDatabase, FiHeart } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi2';

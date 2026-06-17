@@ -1,16 +1,5 @@
-/**
- * LocalStorage utility for persisting analysis history.
- * Handles save, load, clear operations with error handling.
- */
-
 const STORAGE_KEY = 'acnevision_history';
 const MAX_HISTORY_ITEMS = 50;
-
-/**
- * Load analysis history from localStorage.
- * 
- * @returns {Array} Array of past analysis results.
- */
 export function loadHistory() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
@@ -20,16 +9,6 @@ export function loadHistory() {
     return [];
   }
 }
-
-/**
- * Save a new analysis result to history.
- * 
- * @param {Object} result - The analysis result to save.
- * @param {string} result.predicted_class - The predicted severity class.
- * @param {number} result.confidence - The confidence percentage.
- * @param {string} result.imageName - The original file name.
- * @param {string} result.imagePreview - Base64 thumbnail of the image.
- */
 export function saveToHistory(result) {
   try {
     const history = loadHistory();
@@ -43,8 +22,6 @@ export function saveToHistory(result) {
       imageName: result.imageName || 'Unknown',
       imagePreview: result.imagePreview || null,
     };
-    
-    // Add to beginning (most recent first) and cap at max items
     history.unshift(entry);
     if (history.length > MAX_HISTORY_ITEMS) {
       history.pop();
@@ -56,10 +33,6 @@ export function saveToHistory(result) {
     console.error('Failed to save to history:', error);
   }
 }
-
-/**
- * Clear all analysis history.
- */
 export function clearHistory() {
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -67,12 +40,6 @@ export function clearHistory() {
     console.error('Failed to clear history:', error);
   }
 }
-
-/**
- * Delete a specific history entry by ID.
- * 
- * @param {string} id - The entry ID to delete.
- */
 export function deleteHistoryEntry(id) {
   try {
     const history = loadHistory();
@@ -84,14 +51,6 @@ export function deleteHistoryEntry(id) {
     return loadHistory();
   }
 }
-
-/**
- * Create a thumbnail preview from a File object.
- * 
- * @param {File} file - The image file.
- * @param {number} maxSize - Maximum dimension for the thumbnail.
- * @returns {Promise<string>} Base64 encoded thumbnail.
- */
 export function createThumbnail(file, maxSize = 80) {
   return new Promise((resolve) => {
     const reader = new FileReader();

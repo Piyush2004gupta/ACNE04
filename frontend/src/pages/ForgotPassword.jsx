@@ -13,8 +13,6 @@ export default function ForgotPassword() {
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  
-  // Refs for OTP inputs
   const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
   const inputStyle = {
@@ -52,8 +50,6 @@ export default function ForgotPassword() {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
-    // Auto-advance to next input
     if (value !== '' && index < 3) {
       otpRefs[index + 1].current.focus();
     }

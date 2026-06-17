@@ -1,9 +1,3 @@
-/**
- * Navbar Component
- * Fixed top navigation bar with SKIN AI branding, nav links,
- * and responsive mobile hamburger menu.
- */
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,15 +19,11 @@ export default function Navbar() {
     logout();
     navigate('/login');
   };
-
-  // Track scroll position for navbar background
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Close mobile menu on route change
   useEffect(() => {
     setIsOpen(false);
   }, [location]);

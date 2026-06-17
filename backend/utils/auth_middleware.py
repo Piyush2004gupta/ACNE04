@@ -9,8 +9,6 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        
-        # Check if token is in headers
         if 'Authorization' in request.headers:
             auth_header = request.headers['Authorization']
             if auth_header.startswith('Bearer '):
@@ -20,7 +18,6 @@ def token_required(f):
             return jsonify({'error': 'Unauthorized', 'message': 'Token is missing'}), 401
             
         try:
-            # Decode token
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
             user_doc = users_collection.find_one({'_id': ObjectId(data['user_id'])})
             if not user_doc:

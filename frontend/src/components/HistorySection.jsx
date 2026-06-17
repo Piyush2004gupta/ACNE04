@@ -1,9 +1,3 @@
-/**
- * HistorySection Component
- * Displays previous analysis results fetched from the backend.
- * Shows date, severity, and thumbnail for each past analysis.
- */
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiClock, FiChevronDown, FiChevronUp } from 'react-icons/fi';
@@ -21,8 +15,6 @@ const SEVERITY_COLORS = {
 export default function HistorySection({ refreshTrigger }) {
   const [history, setHistory] = useState([]);
   const [expanded, setExpanded] = useState(true);
-
-  // Load history from backend
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {

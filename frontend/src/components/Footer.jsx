@@ -1,8 +1,3 @@
-/**
- * Footer Component
- * Site footer with medical disclaimer, branding, and links.
- */
-
 import { MdFaceRetouchingNatural } from 'react-icons/md';
 import { FiHeart, FiAlertTriangle } from 'react-icons/fi';
 import { Link } from 'react-router-dom';

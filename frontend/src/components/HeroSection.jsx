@@ -1,9 +1,3 @@
-/**
- * HeroSection Component
- * Landing hero with title, subtitle, upload button, and drag-and-drop zone.
- * Features Framer Motion entrance animations and decorative background elements.
- */
-
 import { useCallback, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FiUploadCloud, FiImage, FiCamera } from 'react-icons/fi';

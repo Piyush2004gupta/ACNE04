@@ -1,9 +1,3 @@
-/**
- * ImagePreview Component
- * Displays the uploaded image with metadata (dimensions, file size)
- * and an "Analyze Acne" action button.
- */
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiTrash2, FiZap, FiInfo } from 'react-icons/fi';
@@ -11,8 +5,6 @@ import { HiOutlinePhotograph } from 'react-icons/hi';
 
 export default function ImagePreview({ file, previewUrl, onAnalyze, onRemove, isAnalyzing }) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-  // Get image dimensions when preview loads
   useEffect(() => {
     if (previewUrl) {
       const img = new Image();
@@ -22,8 +14,6 @@ export default function ImagePreview({ file, previewUrl, onAnalyze, onRemove, is
       img.src = previewUrl;
     }
   }, [previewUrl]);
-
-  // Format file size to human readable
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -165,10 +155,6 @@ export default function ImagePreview({ file, previewUrl, onAnalyze, onRemove, is
     </motion.section>
   );
 }
-
-/**
- * MetadataChip — small pill showing a label + value.
- */
 function MetadataChip({ icon, label, value }) {
   return (
     <div style={{

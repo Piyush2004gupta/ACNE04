@@ -51,7 +51,6 @@ export default function Signup() {
     setIsLoading(true);
     
     try {
-      // Remove confirmPassword, imageConsent, termsConsent, and medicalConsent before sending to API
       const { confirmPassword, imageConsent, termsConsent, medicalConsent, ...signupData } = formData;
       await signup(signupData);
       window.location.href = '/'; 

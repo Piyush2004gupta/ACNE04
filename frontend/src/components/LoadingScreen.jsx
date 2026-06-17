@@ -1,9 +1,3 @@
-/**
- * LoadingScreen Component
- * Full-overlay loading screen with circular progress animation
- * and "Analyzing skin condition..." text.
- */
-
 import { motion } from 'framer-motion';
 import { FaMicroscope } from 'react-icons/fa';
 

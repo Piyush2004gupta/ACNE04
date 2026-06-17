@@ -3,8 +3,6 @@
 import { useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-
-// Components
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import ImagePreview from './components/ImagePreview';
@@ -13,8 +11,6 @@ import ResultsDashboard from './components/ResultsDashboard';
 import RecommendationCard from './components/RecommendationCard';
 import HistorySection from './components/HistorySection';
 import Footer from './components/Footer';
-
-// Pages
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
@@ -22,14 +18,8 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 
 import Terms from './pages/Terms';
-
-// Utilities
 import { analyzeImage, saveHistory as saveBackendHistory } from './utils/api';
 import { saveToHistory, createThumbnail } from './utils/storage';
-
-/**
- * Home Page — Main analysis workflow
- */
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -37,16 +27,12 @@ function Home() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
-
-  // Handle image selection (from drag-drop or file input)
   const handleImageSelect = useCallback((file) => {
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setResults(null);
     setError(null);
   }, []);
-
-  // Remove selected image
   const handleRemove = useCallback(() => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(null);
@@ -54,18 +40,7 @@ function Home() {
     setResults(null);
     setError(null);
   }, [previewUrl]);
-
-  // Analyze the uploaded image
   const handleAnalyze = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError({
-        message: 'Please login or sign up for an account to run the AI skin analysis and track your history.',
-        type: 'auth_required',
-      });
-      return;
-    }
-
     if (!selectedFile) return;
 
     setIsAnalyzing(true);
@@ -75,10 +50,6 @@ function Home() {
     try {
       const data = await analyzeImage(selectedFile);
       setResults(data);
-
-
-      
-      // Save to backend database (if logged in)
       const token = localStorage.getItem('token');
       if (token && data.image_url) {
         try {
@@ -216,10 +187,6 @@ function Home() {
     </>
   );
 }
-
-/**
- * Main App with Router
- */
 export default function App() {
   return (
     <Router>

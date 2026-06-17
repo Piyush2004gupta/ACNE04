@@ -1,9 +1,3 @@
-/**
- * RecommendationCard Component
- * Displays AI-generated skincare recommendations based on severity.
- * Features severity-colored accents and expandable tips list.
- */
-
 import { motion } from 'framer-motion';
 import { FiHeart, FiCheckCircle, FiShoppingBag, FiAlertTriangle } from 'react-icons/fi';
 import { HiLightBulb } from 'react-icons/hi2';

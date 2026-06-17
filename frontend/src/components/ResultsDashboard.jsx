@@ -1,9 +1,3 @@
-/**
- * ResultsDashboard Component
- * Displays analysis results with predicted class, confidence score,
- * visual severity meter, and severity indicator badge.
- */
-
 import { motion } from 'framer-motion';
 import { FiActivity, FiTarget, FiTrendingUp } from 'react-icons/fi';
 import { HiShieldCheck } from 'react-icons/hi2';

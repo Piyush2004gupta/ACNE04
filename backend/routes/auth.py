@@ -13,30 +13,19 @@ from models import users_collection, serialize_doc
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 bcrypt = Bcrypt()
-
-# Temporary in-memory storage for OTPs (In production, use Redis or DB)
-# Format: { 'phone_number': { 'otp': '1234', 'expires_at': timestamp } }
 otp_store = {}
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
-    
-    # Required fields
     required = ['name', 'email', 'phone', 'gender', 'age', 'password']
     if not all(k in data for k in required):
         return jsonify({'error': 'Missing data', 'message': 'All fields are required.'}), 400
-        
-    # Check if user already exists
     if users_collection.find_one({'email': data['email']}):
         return jsonify({'error': 'Conflict', 'message': 'Email already registered.'}), 409
     if users_collection.find_one({'phone': data['phone']}):
         return jsonify({'error': 'Conflict', 'message': 'Phone number already registered.'}), 409
-        
-    # Hash password
     hashed_pw = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-    
-    # Create user document
     new_user = {
         'name': data['name'],
         'email': data['email'],
@@ -50,12 +39,8 @@ def signup():
     try:
         result = users_collection.insert_one(new_user)
         user_id = str(result.inserted_id)
-        
-        # Add id to dict for response
         new_user['id'] = user_id
         del new_user['_id']
-        
-        # Generate token automatically so they are logged in
         token = jwt.encode({
             'user_id': user_id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
@@ -78,16 +63,12 @@ def login():
         
     email = data.get('email')
     password = data.get('password')
-    
-    # Try finding user by email
     user_doc = users_collection.find_one({'email': email})
     
     if not user_doc or not bcrypt.check_password_hash(user_doc['password_hash'], password):
         return jsonify({'error': 'Unauthorized', 'message': 'Invalid credentials.'}), 401
         
     user = serialize_doc(user_doc)
-    
-    # Generate token
     token = jwt.encode({
         'user_id': user['id'],
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
@@ -110,17 +91,11 @@ def forgot_password():
     user_doc = users_collection.find_one({'email': email})
     if not user_doc:
         pass
-        
-    # Generate 4-digit OTP
     otp = str(random.randint(1000, 9999))
-    
-    # Store OTP (expires in 10 minutes)
     otp_store[email] = {
         'otp': otp,
         'expires_at': datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
     }
-    
-    # Check if RESEND_API_KEY is set to send real email
     import resend
     
     resend_api_key = os.environ.get("RESEND_API_KEY")
@@ -149,7 +124,6 @@ def forgot_password():
             print(f"[-] Failed to send real email via Resend: {str(e)}", flush=True)
             print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n", flush=True)
     else:
-        # MOCK SENDING EMAIL (Local Dev Fallback):
         print(f"\n[{datetime.datetime.utcnow()}] EMAIL MOCK -> Sent OTP {otp} to {email}\n", flush=True)
     
     return jsonify({
@@ -187,8 +161,6 @@ def reset_password():
     
     if not all([email, otp, new_password]):
         return jsonify({'error': 'Missing data', 'message': 'Email, OTP, and new password are required.'}), 400
-        
-    # Verify OTP again
     stored_data = otp_store.get(email)
     if not stored_data or stored_data['otp'] != otp or datetime.datetime.utcnow() > stored_data['expires_at']:
         return jsonify({'error': 'Unauthorized', 'message': 'Invalid or expired OTP.'}), 401
@@ -196,12 +168,8 @@ def reset_password():
     user_doc = users_collection.find_one({'email': email})
     if not user_doc:
         return jsonify({'error': 'Not found', 'message': 'User not found.'}), 404
-        
-    # Update password
     hashed_pw = bcrypt.generate_password_hash(new_password).decode('utf-8')
     users_collection.update_one({'_id': user_doc['_id']}, {'$set': {'password_hash': hashed_pw}})
-    
-    # Cleanup OTP
     del otp_store[email]
     
     return jsonify({'message': 'Password has been reset successfully.'}), 200

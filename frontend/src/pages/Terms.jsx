@@ -1,8 +1,3 @@
-/**
- * Terms and Conditions Page
- * Legally compliant and beautifully designed Terms & Conditions for HOPELABSAI Solution Private Limited.
- */
-
 import { motion } from 'framer-motion';
 import { HiOutlineDocumentText } from 'react-icons/hi2';
 

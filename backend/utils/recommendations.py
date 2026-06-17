@@ -1,19 +1,9 @@
-"""
-Skincare recommendation engine for the Acne Severity Classification System.
-Maps severity classes to detailed, AI-generated skincare recommendations.
-"""
-
-
-# Severity classes matching model output order
 SEVERITY_CLASSES = [
     "Mild Acne",
     "Moderate Acne",
     "Severe Acne",
     "Very Severe Acne"
 ]
-
-
-# Detailed recommendations for each severity class
 RECOMMENDATIONS = {
     "Clear Skin": {
         "summary": "Your skin appears clear with no significant acne detected.",
@@ -82,19 +72,8 @@ RECOMMENDATIONS = {
 
 
 def get_recommendation(predicted_class):
-    """
-    Get skincare recommendation based on the predicted severity class.
-    
-    Args:
-        predicted_class (str): The predicted acne severity class.
-        
-    Returns:
-        dict: Recommendation data including summary, tips, products, and urgency.
-    """
-    if predicted_class in RECOMMENDATIONS:
+        if predicted_class in RECOMMENDATIONS:
         return RECOMMENDATIONS[predicted_class]
-    
-    # Fallback recommendation
     return {
         "summary": "Unable to determine specific recommendations. Please consult a dermatologist.",
         "tips": ["Consult a board-certified dermatologist for personalized advice."],
@@ -104,16 +83,7 @@ def get_recommendation(predicted_class):
 
 
 def get_severity_index(predicted_class):
-    """
-    Get the severity index (0-4) for a predicted class.
-    
-    Args:
-        predicted_class (str): The predicted acne severity class.
-        
-    Returns:
-        int: Severity index from 0 (clear) to 4 (very severe).
-    """
-    try:
+        try:
         return SEVERITY_CLASSES.index(predicted_class)
     except ValueError:
         return -1
