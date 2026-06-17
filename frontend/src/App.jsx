@@ -76,20 +76,14 @@ function Home() {
       const data = await analyzeImage(selectedFile);
       setResults(data);
 
-      // Save to local history with thumbnail
-      const thumbnail = await createThumbnail(selectedFile);
-      saveToHistory({
-        ...data,
-        imageName: selectedFile.name,
-        imagePreview: thumbnail,
-      });
+
       
       // Save to backend database (if logged in)
       const token = localStorage.getItem('token');
-      if (token && data.image_filename) {
+      if (token && data.image_url) {
         try {
           await saveBackendHistory({
-            image_filename: data.image_filename,
+            image_url: data.image_url,
             predicted_class: data.predicted_class,
             confidence: data.confidence,
             severity_index: data.severity_index,

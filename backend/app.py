@@ -213,9 +213,10 @@ def predict():
                 resource_type="image"
             )
             image_url = cloudinary_response.get("secure_url")
+            print("Cloudinary upload SUCCESS:", image_url, flush=True)
         except Exception as e:
             # Fallback or just print error if Cloudinary fails (e.g. invalid credentials)
-            print("Cloudinary upload failed:", e)
+            print("Cloudinary upload failed:", e, flush=True)
             image_url = None
             
         unique_filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"

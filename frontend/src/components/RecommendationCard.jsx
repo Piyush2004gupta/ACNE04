@@ -105,70 +105,7 @@ export default function RecommendationCard({ recommendation }) {
             </p>
           </div>
 
-          {/* Tips */}
-          <div style={{ padding: '0 28px 20px' }}>
-            <p style={{
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              color: '#0f172a',
-              marginBottom: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}>
-              <HiLightBulb style={{ color: '#eab308' }} />
-              Recommended Actions
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {tips.map((tip, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    background: 'rgba(37, 99, 235, 0.03)',
-                    fontSize: '0.88rem',
-                    color: '#475569',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <FiCheckCircle style={{
-                    color: '#22c55e',
-                    fontSize: '1rem',
-                    marginTop: '2px',
-                    flexShrink: 0,
-                  }} />
-                  {tip}
-                </motion.div>
-              ))}
-            </div>
-          </div>
 
-          {/* Products */}
-          <div style={{
-            padding: '16px 28px',
-            borderTop: '1px solid #e2e8f0',
-            background: 'rgba(248, 250, 252, 0.5)',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '10px',
-          }}>
-            <FiShoppingBag style={{ color: '#2563eb', fontSize: '1rem', marginTop: '2px', flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0f172a', marginBottom: '4px' }}>
-                Suggested Products
-              </p>
-              <p style={{ fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5 }}>
-                {products}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </motion.section>

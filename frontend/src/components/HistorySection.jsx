@@ -1,20 +1,20 @@
 /**
  * HistorySection Component
- * Displays previous analysis results stored in localStorage.
- * Shows date, severity, confidence for each past analysis with clear all option.
+ * Displays previous analysis results fetched from the backend.
+ * Shows date, severity, and thumbnail for each past analysis.
  */
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiClock, FiTrash2, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiClock, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { HiOutlineDocumentText } from 'react-icons/hi';
-import { loadHistory, clearHistory, deleteHistoryEntry } from '../utils/storage';
+import { getHistory } from '../utils/api';
 
 const SEVERITY_COLORS = {
-  'Clear Skin':       '#22c55e',
-  'Mild Acne':        '#84cc16',
-  'Moderate Acne':    '#eab308',
-  'Severe Acne':      '#f97316',
+  'Clear Skin': '#1aca5bff',
+  'Mild Acne': '#84cc16',
+  'Moderate Acne': '#eab308',
+  'Severe Acne': '#f97316',
   'Very Severe Acne': '#ef4444',
 };
 
@@ -22,22 +22,31 @@ export default function HistorySection({ refreshTrigger }) {
   const [history, setHistory] = useState([]);
   const [expanded, setExpanded] = useState(true);
 
-  // Load history from localStorage
+  // Load history from backend
   useEffect(() => {
-    setHistory(loadHistory());
-  }, [refreshTrigger]);
-
-  const handleClear = () => {
-    if (window.confirm('Are you sure you want to clear all history?')) {
-      clearHistory();
+    const token = localStorage.getItem('token');
+    if (!token) {
       setHistory([]);
+      return;
     }
-  };
 
-  const handleDelete = (id) => {
-    const updated = deleteHistoryEntry(id);
-    setHistory(updated);
-  };
+    getHistory()
+      .then(data => {
+        const formatted = data.map(entry => ({
+          id: entry.id || entry._id,
+          predicted_class: entry.predicted_class,
+          confidence: entry.confidence,
+          timestamp: entry.timestamp,
+          imagePreview: entry.image_url,
+          imageName: "Scan Result"
+        }));
+        setHistory(formatted);
+      })
+      .catch(err => {
+        console.error("Failed to fetch history:", err);
+        setHistory([]);
+      });
+  }, [refreshTrigger]);
 
   const formatDate = (iso) => {
     const date = new Date(iso);
@@ -50,7 +59,7 @@ export default function HistorySection({ refreshTrigger }) {
     });
   };
 
-  if (history.length === 0) return null;
+  if (history.length === 0 || !localStorage.getItem('token')) return null;
 
   return (
     <motion.section
@@ -88,7 +97,7 @@ export default function HistorySection({ refreshTrigger }) {
               fontWeight: 700,
               color: '#0f172a',
             }}>
-              Analysis History
+              Your Analysis History
             </h2>
             <span style={{
               display: 'inline-flex',
@@ -107,11 +116,6 @@ export default function HistorySection({ refreshTrigger }) {
             <span style={{ color: '#94a3b8', fontSize: '1rem' }}>
               {expanded ? <FiChevronUp /> : <FiChevronDown />}
             </span>
-          </button>
-
-          <button className="btn-danger" onClick={handleClear}>
-            <FiTrash2 />
-            Clear All
           </button>
         </div>
 
@@ -204,29 +208,6 @@ export default function HistorySection({ refreshTrigger }) {
                           {entry.imageName} • {formatDate(entry.timestamp)}
                         </p>
                       </div>
-
-                      {/* Delete */}
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDelete(entry.id)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#cbd5e1',
-                          cursor: 'pointer',
-                          fontSize: '1rem',
-                          padding: '6px',
-                          borderRadius: '8px',
-                          transition: 'color 0.2s',
-                          flexShrink: 0,
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.color = '#cbd5e1'; }}
-                        aria-label="Delete entry"
-                      >
-                        <FiTrash2 />
-                      </motion.button>
                     </motion.div>
                   );
                 })}
