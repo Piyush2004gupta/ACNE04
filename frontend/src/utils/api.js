@@ -6,7 +6,7 @@
 import axios from 'axios';
 
 // Base API URL — supports Vite environment variables in production
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://acne04.onrender.com';
 
 // Create Axios instance with default configuration
 const api = axios.create({
